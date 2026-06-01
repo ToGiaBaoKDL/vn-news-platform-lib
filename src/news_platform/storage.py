@@ -45,12 +45,14 @@ class StorageLayout:
         source_id: str,
         ingest_date: date,
         article_id: str,
+        source_document_id: str,
         extension: str = "html.zst",
     ) -> str:
         return (
             f"{self.bucket_uri('landing')}/{self.payload_prefix}/article_html/"
             f"source_id={source_id}/ingest_date={format_date_partition(ingest_date)}/"
-            f"article_id={article_id}/document.{extension}"
+            f"article_id={article_id}/source_document_id={source_document_id}/"
+            f"document.{extension}"
         )
 
     def rss_checkpoint_uri(self, source_id: str, feed_id: str) -> str:
