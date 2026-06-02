@@ -61,10 +61,10 @@ class StorageLayout:
             f"source_id={source_id}/feed_id={feed_id}/checkpoint.json"
         )
 
-    def article_fetch_checkpoint_uri(self, article_id: str) -> str:
+    def article_fetch_checkpoint_uri(self, article_id: str, request_revision: str) -> str:
         return (
             f"{self.bucket_uri('landing')}/_checkpoints/article_fetch/"
-            f"article_id={article_id}/checkpoint.json"
+            f"article_id={article_id}/request_revision={request_revision}/checkpoint.json"
         )
 
 

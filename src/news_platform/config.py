@@ -20,6 +20,12 @@ CONFIG_DIR = Path(
 )
 
 SOURCE_DIR = CONFIG_DIR / "sources"
+ENV_OVERRIDES = {
+    "VN_NEWS_STORAGE_ENDPOINT_URL": ("storage", "endpoint_url"),
+    "VN_NEWS_POLARIS_CATALOG_URI": ("storage", "iceberg", "catalog_uri"),
+    "VN_NEWS_REDPANDA_BOOTSTRAP_SERVERS": ("event_bus", "bootstrap_servers"),
+    "VN_NEWS_SCHEMA_REGISTRY_URL": ("event_bus", "schema_registry_url"),
+}
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
@@ -31,28 +37,24 @@ def load_yaml(path: Path) -> dict[str, Any]:
     return data
 
 
-def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
-    merged = dict(base)
-    for key, value in override.items():
-        if isinstance(value, dict) and isinstance(merged.get(key), dict):
-            merged[key] = deep_merge(merged[key], value)
-        else:
-            merged[key] = value
-    return merged
-
-
-def load_settings(environment: str | None = None) -> dict[str, Any]:
+def load_settings() -> dict[str, Any]:
     config = load_yaml(CONFIG_DIR / "settings.yaml")
-    env_name = environment or os.environ.get("TGB_ENV") or config["project"]["default_environment"]
-    env_path = CONFIG_DIR / "environments" / f"{env_name}.yaml"
-    if not env_path.exists():
-        msg = f"Unknown environment: {env_name}"
-        raise ValueError(msg)
-    config = deep_merge(config, load_yaml(env_path))
+    apply_env_overrides(config)
     validate_crawl_config(config)
     validate_storage_config(config)
     validate_event_bus_config(config)
     return config
+
+
+def apply_env_overrides(config: dict[str, Any]) -> None:
+    for env_name, path in ENV_OVERRIDES.items():
+        value = os.environ.get(env_name)
+        if not value:
+            continue
+        target = config
+        for key in path[:-1]:
+            target = target[key]
+        target[path[-1]] = value
 
 
 def load_sources(

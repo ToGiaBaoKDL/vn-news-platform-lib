@@ -37,9 +37,10 @@ class FeedItemDiscovered(SourceEvent):
 
 
 class ArticleFetchRequested(SourceEvent):
-    schema_version: Literal["article.fetch_requested.v2"]
+    schema_version: Literal["article.fetch_requested.v3"]
     article_id: str
     requested_url: HttpUrl
+    request_revision: str
     priority: int = 5
 
 
@@ -87,7 +88,7 @@ EventModel = type[BaseEvent]
 
 EVENT_TOPIC_KEYS: dict[str, str] = {
     "feed_item_discovered": "feed_item.discovered.v2",
-    "article_fetch_requested": "article.fetch_requested.v2",
+    "article_fetch_requested": "article.fetch_requested.v3",
     "article_fetched": "article.fetched.v2",
     "article_extracted": "article.extracted.v2",
     "dlq": "news.dlq.v1",
@@ -95,7 +96,7 @@ EVENT_TOPIC_KEYS: dict[str, str] = {
 
 EVENT_CONTRACTS: dict[str, EventModel] = {
     "feed_item.discovered.v2": FeedItemDiscovered,
-    "article.fetch_requested.v2": ArticleFetchRequested,
+    "article.fetch_requested.v3": ArticleFetchRequested,
     "article.fetched.v2": ArticleFetched,
     "article.extracted.v2": ArticleExtracted,
     "news.dlq.v1": NewsDlq,
