@@ -10,7 +10,7 @@ BucketMap = dict[str, str]
 
 def validate_storage_config(config: dict[str, Any]) -> None:
     buckets: BucketMap = config["storage"]["buckets"]
-    expected_layers = {"landing", "curated", "analytics", "logs"}
+    expected_layers = {"landing", "curated", "analytics"}
     missing_layers = expected_layers - set(buckets)
     if missing_layers:
         msg = f"Missing storage buckets for layers: {sorted(missing_layers)}"
@@ -21,7 +21,7 @@ def validate_storage_config(config: dict[str, Any]) -> None:
         raise ValueError("Bucket names must be unique across layers")
 
     suffixes = []
-    pattern = re.compile(r"^tgb-prod-(landing|curated|analytics|logs)-([a-z0-9]{6})$")
+    pattern = re.compile(r"^tgb-prod-(landing|curated|analytics)-([a-z0-9]{6})$")
     for layer, bucket_name in buckets.items():
         match = pattern.match(bucket_name)
         if not match:
