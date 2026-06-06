@@ -9,9 +9,7 @@ from news_platform.contracts import (
     ArticleFetchRequested,
     FeedItemDiscovered,
     NewsDlq,
-    TableSpec,
     event_json_schema,
-    load_table_specs,
 )
 from news_platform.ids import make_run_id, make_stable_id, normalize_article_url
 from news_platform.storage import StorageLayout
@@ -25,12 +23,10 @@ __all__ = [
     "FeedItemDiscovered",
     "NewsDlq",
     "StorageLayout",
-    "TableSpec",
     "event_json_schema",
     "get_topic_name",
     "load_settings",
     "load_sources",
-    "load_table_specs",
     "make_run_id",
     "make_stable_id",
     "normalize_article_url",

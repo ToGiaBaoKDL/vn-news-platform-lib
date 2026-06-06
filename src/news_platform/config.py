@@ -22,7 +22,6 @@ CONFIG_DIR = Path(
 SOURCE_DIR = CONFIG_DIR / "sources"
 ENV_OVERRIDES = {
     "VN_NEWS_STORAGE_ENDPOINT_URL": ("storage", "endpoint_url"),
-    "VN_NEWS_POLARIS_CATALOG_URI": ("storage", "iceberg", "catalog_uri"),
     "VN_NEWS_REDPANDA_BOOTSTRAP_SERVERS": ("event_bus", "bootstrap_servers"),
     "VN_NEWS_SCHEMA_REGISTRY_URL": ("event_bus", "schema_registry_url"),
 }

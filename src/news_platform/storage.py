@@ -7,7 +7,6 @@ from datetime import date, datetime
 @dataclass(frozen=True)
 class StorageLayout:
     buckets: dict[str, str]
-    warehouse_prefix: str
     payload_prefix: str
 
     @classmethod
@@ -15,15 +14,11 @@ class StorageLayout:
         storage = config["storage"]
         return cls(
             buckets=storage["buckets"],
-            warehouse_prefix=storage["warehouse_prefix"],
             payload_prefix=storage["payload_prefix"],
         )
 
     def bucket_uri(self, layer: str) -> str:
         return f"s3://{self.buckets[layer]}"
-
-    def warehouse_uri(self, layer: str, table_name: str) -> str:
-        return f"{self.bucket_uri(layer)}/{self.warehouse_prefix}/{table_name}/"
 
     def rss_payload_uri(
         self,

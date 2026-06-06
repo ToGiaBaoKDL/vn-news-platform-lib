@@ -8,7 +8,6 @@ from news_platform.contracts.events import (
     NewsDlq,
     event_json_schema,
 )
-from news_platform.contracts.tables import TableSpec, load_table_specs
 
 __all__ = [
     "EVENT_CONTRACTS",
@@ -18,7 +17,5 @@ __all__ = [
     "ArticleFetchRequested",
     "FeedItemDiscovered",
     "NewsDlq",
-    "TableSpec",
     "event_json_schema",
-    "load_table_specs",
 ]
