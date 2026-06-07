@@ -70,7 +70,7 @@ def validate_event_bus_config(config: dict[str, Any]) -> None:
 
     topics = config["event_bus"]["topics"]
     names = []
-    required_fields = {"name", "partitions", "retention_ms"}
+    required_fields = {"name", "partitions", "retention_ms", "retention_bytes"}
     for topic_key, topic in topics.items():
         missing_fields = required_fields - set(topic)
         if missing_fields:
@@ -79,7 +79,7 @@ def validate_event_bus_config(config: dict[str, Any]) -> None:
         if not isinstance(topic["name"], str) or not topic["name"]:
             msg = f"Topic {topic_key} name must be a non-empty string"
             raise ValueError(msg)
-        for field in ("partitions", "retention_ms"):
+        for field in ("partitions", "retention_ms", "retention_bytes"):
             if not isinstance(topic[field], int) or topic[field] <= 0:
                 msg = f"Topic {topic_key} {field} must be a positive integer"
                 raise ValueError(msg)
