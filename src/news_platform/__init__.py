@@ -1,6 +1,6 @@
 """Platform library for VN News Intelligence services."""
 
-from news_platform.config import get_topic_name, load_settings, load_sources
+from news_platform.config import get_topic_key, get_topic_name, load_settings, load_sources
 from news_platform.contracts import (
     EVENT_CONTRACTS,
     EVENT_TOPIC_KEYS,
@@ -24,6 +24,7 @@ __all__ = [
     "NewsDlq",
     "StorageLayout",
     "event_json_schema",
+    "get_topic_key",
     "get_topic_name",
     "load_settings",
     "load_sources",

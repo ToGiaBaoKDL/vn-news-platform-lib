@@ -69,3 +69,10 @@ def load_sources(
 
 def get_topic_name(config: dict[str, Any], topic_key: str) -> str:
     return config["event_bus"]["topics"][topic_key]["name"]
+
+
+def get_topic_key(config: dict[str, Any], topic_name: str) -> str:
+    for topic_key, topic in config["event_bus"]["topics"].items():
+        if topic["name"] == topic_name:
+            return topic_key
+    raise KeyError(f"Unknown topic name: {topic_name}")

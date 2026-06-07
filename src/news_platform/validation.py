@@ -143,6 +143,13 @@ def validate_sources(sources: list[dict[str, Any]], config: dict[str, Any]) -> N
         if missing_article:
             msg = f"Source {source_id} article missing fields: {sorted(missing_article)}"
             raise ValueError(msg)
+        blocked_status_codes = article.get("blocked_status_codes", [])
+        if not isinstance(blocked_status_codes, list) or any(
+            not isinstance(status_code, int) or status_code < 400 or status_code > 599
+            for status_code in blocked_status_codes
+        ):
+            msg = f"Source {source_id} article.blocked_status_codes must be 4xx/5xx integers"
+            raise ValueError(msg)
 
         if crawl["user_agent_policy"] not in user_agent_policies:
             msg = f"Unknown user_agent_policy for {source_id}: {crawl['user_agent_policy']}"
