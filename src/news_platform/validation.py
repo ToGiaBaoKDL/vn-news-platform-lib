@@ -52,6 +52,22 @@ def validate_crawl_config(config: dict[str, Any]) -> None:
 
 
 def validate_event_bus_config(config: dict[str, Any]) -> None:
+    consumer_retry = config["event_bus"].get("consumer_retry")
+    if consumer_retry is not None:
+        for field in ("base_delay_seconds", "max_delay_seconds", "jitter_seconds"):
+            if field not in consumer_retry:
+                msg = f"event_bus.consumer_retry missing field: {field}"
+                raise ValueError(msg)
+            if not isinstance(consumer_retry[field], int) or consumer_retry[field] < 0:
+                msg = f"event_bus.consumer_retry.{field} must be a non-negative integer"
+                raise ValueError(msg)
+        if consumer_retry["base_delay_seconds"] <= 0:
+            raise ValueError("event_bus.consumer_retry.base_delay_seconds must be positive")
+        if consumer_retry["max_delay_seconds"] < consumer_retry["base_delay_seconds"]:
+            raise ValueError(
+                "event_bus.consumer_retry.max_delay_seconds must be >= base_delay_seconds"
+            )
+
     topics = config["event_bus"]["topics"]
     names = []
     required_fields = {"name", "partitions", "retention_ms"}
