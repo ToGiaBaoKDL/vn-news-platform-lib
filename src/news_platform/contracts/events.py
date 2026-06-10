@@ -58,19 +58,30 @@ class ArticleFetched(SourceEvent):
     fetch_status: Literal["success"]
 
 
+class ArticleTextBlock(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["paragraph", "heading", "list_item", "quote", "caption"]
+    text: str
+    ordinal: int
+
+
 class ArticleExtracted(SourceEvent):
-    schema_version: Literal["article.extracted.v2"]
+    schema_version: Literal["article.extracted.v3"]
     article_id: str
     requested_url: HttpUrl
     canonical_url: HttpUrl
     title: str
     summary: str | None = None
     body_text: str
+    content_blocks: list[ArticleTextBlock]
     author: str | None = None
     published_at: datetime | None = None
     language: str = "vi"
     content_hash: str
     source_document_id: str
+    source_payload_uri: str
+    extractor_version: str
     extraction_status: Literal["success"]
 
 
@@ -90,7 +101,7 @@ EVENT_TOPIC_KEYS: dict[str, str] = {
     "feed_item_discovered": "feed_item.discovered.v2",
     "article_fetch_requested": "article.fetch_requested.v3",
     "article_fetched": "article.fetched.v2",
-    "article_extracted": "article.extracted.v2",
+    "article_extracted": "article.extracted.v3",
     "dlq": "news.dlq.v1",
 }
 
@@ -98,7 +109,7 @@ EVENT_CONTRACTS: dict[str, EventModel] = {
     "feed_item.discovered.v2": FeedItemDiscovered,
     "article.fetch_requested.v3": ArticleFetchRequested,
     "article.fetched.v2": ArticleFetched,
-    "article.extracted.v2": ArticleExtracted,
+    "article.extracted.v3": ArticleExtracted,
     "news.dlq.v1": NewsDlq,
 }
 

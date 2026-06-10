@@ -170,6 +170,27 @@ def validate_sources(sources: list[dict[str, Any]], config: dict[str, Any]) -> N
                 "non-empty strings of at most 200 characters"
             )
             raise ValueError(msg)
+        extraction = article.get("extraction", {})
+        if not isinstance(extraction, dict):
+            msg = f"Source {source_id} article.extraction must be a mapping"
+            raise ValueError(msg)
+        for field in ("content_selectors", "exclude_selectors", "boilerplate_markers"):
+            selectors = extraction.get(field, [])
+            if not isinstance(selectors, list) or any(
+                not isinstance(selector, str) or not selector.strip() or len(selector) > 200
+                for selector in selectors
+            ):
+                msg = (
+                    f"Source {source_id} article.extraction.{field} must be "
+                    "non-empty strings of at most 200 characters"
+                )
+                raise ValueError(msg)
+        for field in ("min_text_chars", "min_blocks"):
+            if field in extraction and (
+                not isinstance(extraction[field], int) or extraction[field] <= 0
+            ):
+                msg = f"Source {source_id} article.extraction.{field} must be positive"
+                raise ValueError(msg)
 
         if crawl["user_agent_policy"] not in user_agent_policies:
             msg = f"Unknown user_agent_policy for {source_id}: {crawl['user_agent_policy']}"
