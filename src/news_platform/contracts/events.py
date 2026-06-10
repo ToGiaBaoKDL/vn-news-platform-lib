@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 JSON_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
 
@@ -66,6 +66,15 @@ class ArticleTextBlock(BaseModel):
     ordinal: int
 
 
+class ArticleImage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    url: HttpUrl
+    alt: str | None = None
+    caption: str | None = None
+    ordinal: int
+
+
 class ArticleExtracted(SourceEvent):
     schema_version: Literal["article.extracted.v3"]
     article_id: str
@@ -75,6 +84,7 @@ class ArticleExtracted(SourceEvent):
     summary: str | None = None
     body_text: str
     content_blocks: list[ArticleTextBlock]
+    images: list[ArticleImage] = Field(default_factory=list)
     author: str | None = None
     published_at: datetime | None = None
     language: str = "vi"
