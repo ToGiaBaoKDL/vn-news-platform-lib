@@ -120,6 +120,7 @@ def validate_sources(sources: list[dict[str, Any]], config: dict[str, Any]) -> N
             msg = f"Invalid source_id: {source_id}"
             raise ValueError(msg)
         domain = source["domain"]
+        validate_domain_name(source_id, "domain", domain)
         source_ids.append(source_id)
         crawl = source["crawl"]
         feed_discovery = source["feed_discovery"]
@@ -149,6 +150,25 @@ def validate_sources(sources: list[dict[str, Any]], config: dict[str, Any]) -> N
             for status_code in blocked_status_codes
         ):
             msg = f"Source {source_id} article.blocked_status_codes must be 4xx/5xx integers"
+            raise ValueError(msg)
+        approved_redirect_domains = article.get("approved_redirect_domains", [])
+        if not isinstance(approved_redirect_domains, list):
+            msg = f"Source {source_id} article.approved_redirect_domains must be a list"
+            raise ValueError(msg)
+        for redirect_domain in approved_redirect_domains:
+            validate_domain_name(source_id, "article.approved_redirect_domains", redirect_domain)
+        if len(approved_redirect_domains) != len(set(approved_redirect_domains)):
+            msg = f"Source {source_id} article.approved_redirect_domains must be unique"
+            raise ValueError(msg)
+        invalid_document_markers = article.get("invalid_document_markers", [])
+        if not isinstance(invalid_document_markers, list) or any(
+            not isinstance(marker, str) or not marker.strip() or len(marker) > 200
+            for marker in invalid_document_markers
+        ):
+            msg = (
+                f"Source {source_id} article.invalid_document_markers must be "
+                "non-empty strings of at most 200 characters"
+            )
             raise ValueError(msg)
 
         if crawl["user_agent_policy"] not in user_agent_policies:
@@ -205,4 +225,19 @@ def validate_source_url_domain(source_id: str, domain: str, url: str) -> None:
     host = urlparse(url).hostname
     if not host or (host != domain and not host.endswith(f".{domain}")):
         msg = f"Source {source_id} URL host must match domain {domain}: {url}"
+        raise ValueError(msg)
+
+
+def validate_domain_name(source_id: str, field: str, value: Any) -> None:
+    if not isinstance(value, str):
+        msg = f"Source {source_id} {field} must be a domain string"
+        raise ValueError(msg)
+    domain = value.strip().rstrip(".").lower()
+    if domain != value or "://" in value or "/" in value or ":" in value:
+        msg = f"Source {source_id} {field} must be a normalized domain: {value}"
+        raise ValueError(msg)
+    labels = domain.split(".")
+    label_pattern = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
+    if len(labels) < 2 or any(not label_pattern.match(label) for label in labels):
+        msg = f"Source {source_id} {field} is not a valid domain: {value}"
         raise ValueError(msg)
