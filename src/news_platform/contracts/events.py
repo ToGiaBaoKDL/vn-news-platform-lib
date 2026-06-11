@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 JSON_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
 
@@ -91,8 +91,20 @@ class ArticleExtracted(SourceEvent):
     content_hash: str
     source_document_id: str
     source_payload_uri: str
+    extracted_payload_uri: str | None = None
+    extracted_payload_hash: str | None = None
     extractor_version: str
     extraction_status: Literal["success"]
+
+    @model_validator(mode="after")
+    def validate_content_location(self) -> ArticleExtracted:
+        if not self.body_text and not self.extracted_payload_uri:
+            raise ValueError("ArticleExtracted requires body_text or extracted_payload_uri")
+        if self.extracted_payload_uri and not self.extracted_payload_hash:
+            raise ValueError("ArticleExtracted requires extracted_payload_hash with URI")
+        if self.extracted_payload_hash and not self.extracted_payload_uri:
+            raise ValueError("ArticleExtracted requires extracted_payload_uri with hash")
+        return self
 
 
 class NewsDlq(BaseEvent):

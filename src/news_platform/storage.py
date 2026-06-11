@@ -50,6 +50,22 @@ class StorageLayout:
             f"document.{extension}"
         )
 
+    def extracted_payload_uri(
+        self,
+        source_id: str,
+        ingest_date: date,
+        article_id: str,
+        source_document_id: str,
+        extracted_payload_hash: str,
+        extension: str = "json.zst",
+    ) -> str:
+        return (
+            f"{self.bucket_uri('landing')}/{self.payload_prefix}/article_extracted/"
+            f"source_id={source_id}/ingest_date={format_date_partition(ingest_date)}/"
+            f"article_id={article_id}/source_document_id={source_document_id}/"
+            f"extracted_payload_hash={extracted_payload_hash}/document.{extension}"
+        )
+
     def rss_checkpoint_uri(self, source_id: str, feed_id: str) -> str:
         return (
             f"{self.bucket_uri('landing')}/_checkpoints/rss/"
