@@ -117,6 +117,15 @@ class NewsDlq(BaseEvent):
     payload: dict[str, Any]
 
 
+class PipelineMetricObserved(BaseEvent):
+    schema_version: Literal["pipeline.metric_observed.v1"]
+    service: str
+    metric_name: str
+    metric_value: float
+    metric_unit: str = "count"
+    dimensions: dict[str, str] = Field(default_factory=dict)
+
+
 EventModel = type[BaseEvent]
 
 EVENT_TOPIC_KEYS: dict[str, str] = {
@@ -124,6 +133,7 @@ EVENT_TOPIC_KEYS: dict[str, str] = {
     "article_fetch_requested": "article.fetch_requested.v3",
     "article_fetched": "article.fetched.v2",
     "article_extracted": "article.extracted.v3",
+    "pipeline_metric": "pipeline.metric_observed.v1",
     "dlq": "news.dlq.v1",
 }
 
@@ -132,6 +142,7 @@ EVENT_CONTRACTS: dict[str, EventModel] = {
     "article.fetch_requested.v3": ArticleFetchRequested,
     "article.fetched.v2": ArticleFetched,
     "article.extracted.v3": ArticleExtracted,
+    "pipeline.metric_observed.v1": PipelineMetricObserved,
     "news.dlq.v1": NewsDlq,
 }
 

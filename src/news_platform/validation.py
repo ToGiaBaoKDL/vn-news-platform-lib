@@ -87,6 +87,30 @@ def validate_event_bus_config(config: dict[str, Any]) -> None:
     if len(names) != len(set(names)):
         raise ValueError("Topic names must be unique")
 
+    metrics = config["event_bus"].get("metrics")
+    if metrics is not None:
+        for field in ("namespace", "collector_group_id"):
+            if not isinstance(metrics.get(field), str) or not metrics[field].strip():
+                msg = f"event_bus.metrics.{field} must be a non-empty string"
+                raise ValueError(msg)
+        if not re.fullmatch(r"[A-Za-z0-9_.-]+", metrics["namespace"]):
+            raise ValueError("event_bus.metrics.namespace contains invalid characters")
+        for field in (
+            "flush_interval_seconds",
+            "poll_timeout_seconds",
+            "source_failure_min_rejections",
+        ):
+            if not isinstance(metrics.get(field), int) or metrics[field] <= 0:
+                msg = f"event_bus.metrics.{field} must be a positive integer"
+                raise ValueError(msg)
+        lag_groups = metrics.get("consumer_lag_groups", [])
+        if not isinstance(lag_groups, list) or any(
+            not isinstance(group, str) or not group.strip() for group in lag_groups
+        ):
+            raise ValueError("event_bus.metrics.consumer_lag_groups must be non-empty strings")
+        if len(lag_groups) != len(set(lag_groups)):
+            raise ValueError("event_bus.metrics.consumer_lag_groups must be unique")
+
 
 def validate_sources(sources: list[dict[str, Any]], config: dict[str, Any]) -> None:
     required_source_fields = {
