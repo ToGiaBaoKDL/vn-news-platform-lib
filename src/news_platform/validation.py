@@ -8,6 +8,30 @@ from urllib.parse import urlparse
 BucketMap = dict[str, str]
 
 
+def validate_lakehouse_config(config: dict[str, Any]) -> None:
+    lakehouse = config.get("lakehouse")
+    if not isinstance(lakehouse, dict):
+        raise ValueError("lakehouse must be a mapping")
+
+    for field in ("catalog_name", "warehouse_prefix"):
+        value = lakehouse.get(field)
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"lakehouse.{field} must be a non-empty string")
+        if value != value.strip():
+            raise ValueError(f"lakehouse.{field} must not contain surrounding whitespace")
+
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", lakehouse["catalog_name"]):
+        raise ValueError("lakehouse.catalog_name must be a valid Spark catalog identifier")
+
+    warehouse_prefix = lakehouse["warehouse_prefix"]
+    if (
+        warehouse_prefix != warehouse_prefix.strip("/")
+        or "//" in warehouse_prefix
+        or not re.fullmatch(r"[a-z0-9][a-z0-9/_-]*", warehouse_prefix)
+    ):
+        raise ValueError("lakehouse.warehouse_prefix must be a normalized relative path")
+
+
 def validate_storage_config(config: dict[str, Any]) -> None:
     buckets: BucketMap = config["storage"]["buckets"]
     expected_layers = {"landing", "curated", "analytics"}

@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 from typing import Any
 
 import yaml
 
+from news_platform.contracts.pipelines import PipelineJobDefinition
 from news_platform.validation import (
     validate_crawl_config,
     validate_event_bus_config,
+    validate_lakehouse_config,
     validate_sources,
     validate_storage_config,
 )
@@ -20,6 +23,8 @@ CONFIG_DIR = Path(
 )
 
 SOURCE_DIR = CONFIG_DIR / "sources"
+PIPELINE_DIR = CONFIG_DIR / "pipelines"
+CONFIG_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 ENV_OVERRIDES = {
     "VN_NEWS_STORAGE_ENDPOINT_URL": ("storage", "endpoint_url"),
     "VN_NEWS_REDPANDA_BOOTSTRAP_SERVERS": ("event_bus", "bootstrap_servers"),
@@ -42,7 +47,27 @@ def load_settings() -> dict[str, Any]:
     validate_crawl_config(config)
     validate_storage_config(config)
     validate_event_bus_config(config)
+    validate_lakehouse_config(config)
     return config
+
+
+def load_pipeline_config(name: str) -> dict[str, Any]:
+    if not CONFIG_NAME_PATTERN.fullmatch(name):
+        raise ValueError(f"Invalid pipeline config name: {name!r}")
+    return load_yaml(PIPELINE_DIR / f"{name}.yaml")
+
+
+def load_pipeline_definition(
+    name: str,
+    *,
+    settings: dict[str, Any] | None = None,
+) -> PipelineJobDefinition:
+    definition = PipelineJobDefinition.model_validate(load_pipeline_config(name))
+    if definition.name != name:
+        raise ValueError(f"Pipeline name must match config name {name!r}: got {definition.name!r}")
+    settings = load_settings() if settings is None else settings
+    get_topic_name(settings, definition.input_topic_key)
+    return definition
 
 
 def apply_env_overrides(config: dict[str, Any]) -> None:
@@ -76,3 +101,13 @@ def get_topic_key(config: dict[str, Any], topic_name: str) -> str:
         if topic["name"] == topic_name:
             return topic_key
     raise KeyError(f"Unknown topic name: {topic_name}")
+
+
+def get_lakehouse_catalog_name(config: dict[str, Any]) -> str:
+    return config["lakehouse"]["catalog_name"]
+
+
+def get_lakehouse_warehouse_uri(config: dict[str, Any]) -> str:
+    curated_bucket = config["storage"]["buckets"]["curated"]
+    warehouse_prefix = config["lakehouse"]["warehouse_prefix"]
+    return f"s3://{curated_bucket}/{warehouse_prefix}"

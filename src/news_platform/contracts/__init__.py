@@ -10,16 +10,42 @@ from news_platform.contracts.events import (
     NewsDlq,
     event_json_schema,
 )
+from news_platform.contracts.pipelines import (
+    PipelineJobDefinition,
+    PipelineOutputDefinition,
+    SparkJobDefinition,
+)
+from news_platform.contracts.tables import (
+    CURATED_TABLE_CONTRACTS,
+    ICEBERG_DEFAULT_PROPERTIES,
+    TABLE_CONTRACTS,
+    IcebergTableContract,
+    TableField,
+    TablePartition,
+    get_table_contract,
+    parse_partition_expression,
+)
 
 __all__ = [
+    "CURATED_TABLE_CONTRACTS",
     "EVENT_CONTRACTS",
     "EVENT_TOPIC_KEYS",
+    "ICEBERG_DEFAULT_PROPERTIES",
+    "TABLE_CONTRACTS",
     "ArticleExtracted",
     "ArticleFetched",
     "ArticleFetchRequested",
     "ArticleImage",
     "ArticleTextBlock",
     "FeedItemDiscovered",
+    "IcebergTableContract",
     "NewsDlq",
+    "PipelineJobDefinition",
+    "PipelineOutputDefinition",
+    "SparkJobDefinition",
+    "TableField",
+    "TablePartition",
     "event_json_schema",
+    "get_table_contract",
+    "parse_partition_expression",
 ]
